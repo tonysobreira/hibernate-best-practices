@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +14,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.PostCommentDTO;
 import com.example.demo.dto.PostDTO;
 import com.example.demo.dto.PostDTO2;
+import com.example.demo.dto.PostDTO3;
 import com.example.demo.dto.PostViewDTO;
+import com.example.demo.dto.TagDTO;
 import com.example.demo.model.Post;
 import com.example.demo.model.PostComment;
 import com.example.demo.model.PostView;
@@ -130,6 +134,30 @@ public class PostController {
 		}
 		
 		return postViewDTO;
+	}
+	
+	@GetMapping("/post-comments-tags/{id}")
+	public PostDTO3 getPostWithCommentsAndTags(@PathVariable(name = "id") Long id) {
+		Post postWithComments = postRepository.getPostWithComments(id);
+		Post postWithTags = postRepository.getPostWithTags(postWithComments);
+		
+//		post.setComments(postWithComments.getComments());
+//		post.setTags(postWithTags.getTags());
+		
+		List<PostCommentDTO> postCommentDTOList = postWithComments.getComments()
+				.stream()
+				.map(pc -> new PostCommentDTO(pc))
+				.collect(Collectors.toList());
+		
+		List<TagDTO> tagDTOList = postWithTags.getTags()
+				.stream()
+				.map(t -> new TagDTO(t))
+				.collect(Collectors.toList());
+		
+		//
+		postWithComments.setTags(postWithTags.getTags());
+		
+		return new PostDTO3(postWithComments, postCommentDTOList, tagDTOList);
 	}
 
 }

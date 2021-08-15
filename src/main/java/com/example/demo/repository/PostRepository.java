@@ -68,4 +68,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 	@Query(value = " SELECT pv FROM PostView pv " 
 			+ " WHERE pv.postId = :id ")
 	List<PostView> findPostView(@Param(value = "id") Long id);
+	
+	//
+	
+	@Query(value = " SELECT DISTINCT p FROM Post p " 
+			+ " LEFT JOIN FETCH p.comments "
+			+ " WHERE p.id = :id ")
+	@QueryHints(value = {@QueryHint(name = org.hibernate.annotations.QueryHints.PASS_DISTINCT_THROUGH, value = "false") })
+	Post getPostWithComments(@Param(value = "id") Long id);
+	
+	@Query(value = " SELECT DISTINCT p FROM Post p " 
+			+ " LEFT JOIN FETCH p.tags "
+			+ " WHERE p = :post ")
+	@QueryHints(value = {@QueryHint(name = org.hibernate.annotations.QueryHints.PASS_DISTINCT_THROUGH, value = "false") })
+	Post getPostWithTags(@Param(value = "post") Post post);
 }
